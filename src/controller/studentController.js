@@ -41,11 +41,6 @@ const getStudent = async (req,res) => {
     }
 };
 
-module.exports = {
-    getStudent,
-};
-
-
 const studentController = {
     createStudent,
     getStudent
