@@ -1,6 +1,6 @@
 const users = require('../model/studentModel')
 const { responseMessage } = require('../constant/messages')
-const { student,error,status,JWT,loginStatus } = responseMessage;
+const { student,error,status,JWT,loginStatus,StatusCode } = responseMessage;
 const { passworDycription } = require('../utils/hasPassword');
 const { passwordProcess } = require('../utils/comparePassword');
 const { generateJWTToken } = require('../utils/generateJWTToken');
@@ -8,26 +8,34 @@ const { generateJWTToken } = require('../utils/generateJWTToken');
 const createStudent = async (req,res)=>{
     try{
         const payloadData = req.body;
-        if(payloadData){
-            const { hashPassword,slat } = await passworDycription(payloadData.password)
-            let updatedPayload = {
-                ...payloadData,
-                password:hashPassword,
-                slat:slat
-            }
-            const newUser = new users(updatedPayload)
-            const saveResponse = await newUser.save();
-            if(saveResponse){
-                return res.status(200).json({
-                    status:status.success,
-                    message: student.AddStudent,
-                    data:newUser
-                });
-            }else{
-                return res.status(500).json({
-                    status:status.success,
-                    message: error.Error
-                })
+        let findData = await users.findOne({email:payloadData.email});
+        if(findData !== null){
+            return res.status(StatusCode.unsuccess).json({
+                success:false,
+                message:student.StudentAlradyExiest
+            })
+        }
+        else{
+            if(payloadData){
+                const { hashPassword,slat } = await passworDycription(payloadData.password)
+                let updatedPayload = {
+                    ...payloadData,
+                    password:hashPassword,
+                    slat:slat
+                }
+                const newUser = new users(updatedPayload)
+                const saveResponse = await newUser.save();
+                if(saveResponse){
+                    return res.status(StatusCode.success).json({
+                        status:status.success,
+                        message: student.AddStudent,
+                    });
+                }else{
+                    return res.status(StatusCode.internallIssue).json({
+                        status:status.success,
+                        message: error.Error
+                    })
+                }
             }
         }
     }
@@ -39,7 +47,7 @@ const getStudent = async (req,res) => {
     try {
         const findStudent = await users.find();
         if (findStudent) {
-            return res.status(200).json({
+            return res.status(StatusCode.success).json({
                 status: status.success,
                 message: student.GetStudent,
                 data: findStudent
@@ -58,20 +66,20 @@ const studentLoign = async(req,res)=>{
             if(compareStatus == true){
                 const token = generateJWTToken(findUser[0]?._id,JWT.EXPIRY)
                 if(token){
-                    res.status(200).json({
+                    res.status(StatusCode.success).json({
                         status:true,
                         message:token,
                         token:loginStatus.success
                     })
                 }
             }else{
-                return res.status(400).json({
+                return res.status(StatusCode.unsuccess).json({
                     status:false,
                     message:student.WrongPassword
                 })
             }
         }else{
-            res.status(400).json({
+            res.status(StatusCode.unsuccess).json({
                 status:false,
                 message:student.studentNotFound
             })

@@ -1,6 +1,6 @@
 const {responseMessage} = require('../constant/messages')
 const { verifyJWTToken } = require('../utils/verifyJWTToken')
-const { Token } = responseMessage;
+const { Token,StatusCode } = responseMessage;
 const users = require('../model/studentModel')
 
 const user = [
@@ -15,7 +15,7 @@ const jwtAuthorization = async(req,res,next)=>{
     try{
         const { authorization } = req.headers;
         if (!authorization){
-            return res.status(400).json({
+            return res.status(StatusCode.unsuccess).json({
                 success:false,
                 message:Token.TokenNotFound
             })
@@ -27,7 +27,7 @@ const jwtAuthorization = async(req,res,next)=>{
              const currentDate = Math.floor(Date.now() / 1000);
          
              if (currentDate > verifyToken?.exp) {
-               return res.status(401).json({
+               return res.status(StatusCode.unsuccess).json({
                  success: false,
                  message: Token.TokenExpire,
                });
@@ -37,7 +37,7 @@ const jwtAuthorization = async(req,res,next)=>{
             }
             else{
                 let findUser = await users.findOne({_id:verifyToken.sub})
-                return res.status(400).json({
+                return res.status(StatusCode.unsuccess).json({
                     status:false,
                     message:`${findUser.firstName} ${findUser.lastName} you don't have accsess`
                 })
