@@ -6,6 +6,15 @@ const studentSchema = new mongoose.Schema({
     },
     lastName: {
         type: String
+    },
+    email:{
+        type:String
+    },
+    password:{
+        type:String
+    },
+    slat:{
+        type:String
     }
 });
 
